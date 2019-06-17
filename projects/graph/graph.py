@@ -72,16 +72,23 @@ class Graph:
 
 
 
-    def dft_recursive(self, starting_vertex):
+    def dft_recursive(self, starting_vertex, visited=None):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
         This should be done using recursion.
         """
-        pass  # TODO
+        if visited is None:
+            visited = set()
+        # mark the starting node as visited
+        print(starting_vertex)
+        visited.add(starting_vertex)
+        # call dft_recursive on each unvisited child
+        for neighbor in self.vertices[starting_vertex]:
+            if neighbor not in visited:
+                self.dft_recursive(neighbor, visited)
+    
 
-
-        
     def bfs(self, starting_vertex, destination_vertex):
         """
         Return a list containing the shortest path from
@@ -101,6 +108,31 @@ class Graph:
                     # Copy the path
                     # Append neighbor to the back of the copy
                     # Enqueue copy
+        q = Queue()
+        visited = set()
+        print('visited', visited)
+
+        q.enqueue([starting_vertex])
+        print('q enqueue', q.size())
+
+        while q.size() > 0:
+            v = q.dequeue()
+            node = v[-1]
+            print('node', node)
+
+            if node not in visited:
+                for neighbor in self.vertices[node]:
+                    path = list(v)
+                    print('path pre-append', path)
+                    path.append(neighbor)
+                    print('path post-append', path)
+                    q.enqueue(path)
+                    print('q post enqueue path', q.size())
+                    if neighbor == destination_vertex:
+                        return path
+                
+                visited.add(node)
+                print('visited post-add node', visited)
 
 
 
@@ -110,7 +142,25 @@ class Graph:
         starting_vertex to destination_vertex in
         depth-first order.
         """
-        pass  # TODO
+        s = Stack()
+        visited = set()
+
+        s.push([starting_vertex])
+
+        while s.size() > 0:
+            v = s.pop()
+            node = v[-1]
+            print('node', node)
+
+            if node not in visited:
+                for neighbor in self.vertices[node]:
+                    path = list(v)
+                    path.append(neighbor)
+                    s.push(path)
+                    if neighbor == destination_vertex:
+                        return path
+                
+                visited.add(node)
 
 
 
