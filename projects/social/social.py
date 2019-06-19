@@ -1,4 +1,17 @@
+import random
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
 
 class User:
     def __init__(self, name):
@@ -47,8 +60,22 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        for i in range(numUsers):
+            self.addUser(f"User {i + 1}")
 
         # Create friendships
+        connections = []
+        for userID in self.users:
+            for friendID in range(userID + 1, self.lastID + 1):
+                connections.append(userID, friendID)
+        
+        # Shuffle
+        random.shuffle(connections)
+
+        # Add friends
+        for friendship_index in range(avgFriendships * numUsers // 2):
+            friendship = connections[friendship_index]
+            self.addFriendship(friendship[0], friendship[1])
 
     def getAllSocialPaths(self, userID):
         """
@@ -59,10 +86,73 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
+    
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+        q = Queue()
+        q.enqueue(userID)
+
+        while q.size() > 0:
+            v = q.dequeue()
+            if v not in visited:
+                visited.update({v: []})
+                for friend in self.friendships[v]:
+                    q.enqueue(friend)
+
+            for friend in visited:
+                if userID is not friend:
+                    path = self.bfs(userID, friend)
+                    visited.update({friend: path})
+                else:
+                    visited.update({userID: [userID]})
+            
+
         return visited
 
+    # bfs to find shortest friendship path
+    def bfs(self, starting_vertex, destination_vertex):
+        """
+        Return a list containing the shortest path from
+        starting_vertex to destination_vertex in
+        breath-first order.
+        """
+
+        # Create an empty set to store visited nodes
+        # Create an empty Queue and enqueue A PATH TO the starting vertex
+        # While the queue is not empty...
+            # Dequeue the first PATH
+            # GRAB THE VERTEX FROM THE END OF THE PATH
+            # IF VERTEX = TARGET, RETURN PATH
+            # If that vertex has not been visited...
+                # Mark it as visited
+                # Then add A PATH TO all of its neighbors to the back of the queue
+                    # Copy the path
+                    # Append neighbor to the back of the copy
+                    # Enqueue copy
+        q = Queue()
+        visited = set()
+        print('visited', visited)
+
+        q.enqueue([starting_vertex])
+        print('q enqueue', q.size())
+
+        while q.size() > 0:
+            v = q.dequeue()
+            node = v[-1]
+            print('node', node)
+
+            if node not in visited:
+                for neighbor in self.vertices[node]:
+                    path = list(v)
+                    print('path pre-append', path)
+                    path.append(neighbor)
+                    print('path post-append', path)
+                    q.enqueue(path)
+                    print('q post enqueue path', q.size())
+                    if neighbor == destination_vertex:
+                        return path
+                
+                visited.add(node)
 
 if __name__ == '__main__':
     sg = SocialGraph()
