@@ -1,4 +1,5 @@
 import random
+import time
 
 class Queue():
     def __init__(self):
@@ -16,6 +17,8 @@ class Queue():
 class User:
     def __init__(self, name):
         self.name = name
+    def __repr__(self):
+        return self.name
 
 class SocialGraph:
     def __init__(self):
@@ -60,22 +63,24 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        # O(n)
         for i in range(numUsers):
             self.addUser(f"User {i + 1}")
 
         # Create friendships
-        connections = []
+        possibleFriendships = []
+        # Time Complexity: O(n^2)
         for userID in self.users:
             for friendID in range(userID + 1, self.lastID + 1):
-                connections.append(userID, friendID)
-        
-        # Shuffle
-        random.shuffle(connections)
+                possibleFriendships.append((userID, friendID))
 
-        # Add friends
-        for friendship_index in range(avgFriendships * numUsers // 2):
-            friendship = connections[friendship_index]
+        # friendshipsToCreate = random.sample(possibleFriendships, (numUsers * avgFriendships) // 2)
+        numFriendshipsToCreate = (numUsers * avgFriendships) // 2
+        random.shuffle(possibleFriendships)
+        friendshipsToCreate = possibleFriendships[:numFriendshipsToCreate]
+        for friendship in friendshipsToCreate:
             self.addFriendship(friendship[0], friendship[1])
+
 
     def getAllSocialPaths(self, userID):
         """
@@ -86,77 +91,29 @@ class SocialGraph:
 
         The key is the friend's ID and the value is the path.
         """
-    
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
         q = Queue()
-        q.enqueue(userID)
-
+        visited = {}
+        q.enqueue( [userID] )
         while q.size() > 0:
-            v = q.dequeue()
+            path = q.dequeue()
+            v = path[-1]
             if v not in visited:
-                visited.update({v: []})
-                for friend in self.friendships[v]:
-                    q.enqueue(friend)
-
-            for friend in visited:
-                if userID is not friend:
-                    path = self.bfs(userID, friend)
-                    visited.update({friend: path})
-                else:
-                    visited.update({userID: [userID]})
-            
-
+                visited[v] = path
+                for neighbor in self.friendships[v]:
+                    path_copy = list(path)
+                    path_copy.append(neighbor)
+                    q.enqueue(path_copy)
         return visited
 
-    # bfs to find shortest friendship path
-    def bfs(self, starting_vertex, destination_vertex):
-        """
-        Return a list containing the shortest path from
-        starting_vertex to destination_vertex in
-        breath-first order.
-        """
-
-        # Create an empty set to store visited nodes
-        # Create an empty Queue and enqueue A PATH TO the starting vertex
-        # While the queue is not empty...
-            # Dequeue the first PATH
-            # GRAB THE VERTEX FROM THE END OF THE PATH
-            # IF VERTEX = TARGET, RETURN PATH
-            # If that vertex has not been visited...
-                # Mark it as visited
-                # Then add A PATH TO all of its neighbors to the back of the queue
-                    # Copy the path
-                    # Append neighbor to the back of the copy
-                    # Enqueue copy
-        q = Queue()
-        visited = set()
-        print('visited', visited)
-
-        q.enqueue([starting_vertex])
-        print('q enqueue', q.size())
-
-        while q.size() > 0:
-            v = q.dequeue()
-            node = v[-1]
-            print('node', node)
-
-            if node not in visited:
-                for neighbor in self.vertices[node]:
-                    path = list(v)
-                    print('path pre-append', path)
-                    path.append(neighbor)
-                    print('path post-append', path)
-                    q.enqueue(path)
-                    print('q post enqueue path', q.size())
-                    if neighbor == destination_vertex:
-                        return path
-                
-                visited.add(node)
 
 if __name__ == '__main__':
     sg = SocialGraph()
+    start_time = time.time()
     sg.populateGraph(10, 2)
+    end_time = time.time()
+    # print (f"Runtime: {end_time - start_time} seconds")
     print(sg.friendships)
     connections = sg.getAllSocialPaths(1)
     print(connections)
